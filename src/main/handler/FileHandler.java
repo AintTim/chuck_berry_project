@@ -25,6 +25,9 @@ public class FileHandler {
     }
 
     public static void writeFile(Path destination, String text) {
+        if (!validate(destination)) {
+            throw new IllegalArgumentException("Указан недопустимый тип файла");
+        }
         try {
             if (!Files.exists(destination)) {
                 Files.createFile(destination);
@@ -36,6 +39,6 @@ public class FileHandler {
     }
 
     private static boolean validate(Path path) {
-        return path.endsWith(VALID_FILE_FORMAT);
+        return path.getFileName().toString().endsWith(VALID_FILE_FORMAT);
     }
 }
