@@ -1,8 +1,9 @@
 package main;
 
 import main.handler.FileHandler;
+import main.model.Alphabet;
+import main.model.EncryptionModel;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.function.*;
@@ -14,19 +15,19 @@ import static main.handler.MapHandler.getKey;
 public class CryptoAnalyzer {
 
     private final Map<Integer, Character> alphabetMap;
-    private final List<String> originalText;
-    private final StringBuilder encryptedText;
+    private final FileHandler fileHandler;
 
-    public CryptoAnalyzer(Path sourceFilePath, List<Character> alphabet) {
-        originalText = FileHandler.readFile(sourceFilePath);
-        alphabetMap = mapAlphabet(alphabet);
-        encryptedText = new StringBuilder(originalText.size());
+    public CryptoAnalyzer(FileHandler fileHandler, Alphabet... alphabets) {
+        alphabetMap = mapAlphabet(Alphabet.getDictionaries(alphabets));
+        this.fileHandler = fileHandler;
     }
 
-    public void encrypt(int key, Path destination) {
-        if (!validateKey(key)) {
-            throw new IllegalArgumentException(String.format("Ключ шифра '%d' не соответствует требованиям!", key));
+    public void encrypt(EncryptionModel model) {
+        if (!validateKey(model.getKey())) {
+            throw new IllegalArgumentException(String.format("Ключ шифра '%d' не соответствует требованиям!", model.getKey()));
         }
+        List<String> originalText = fileHandler.readFile(model.getSource());
+        StringBuilder encryptedText = new StringBuilder(originalText.size());
 
         BiConsumer<Character, Integer> encryptSymbol = (symbol,k) -> {
             if (alphabetMap.containsValue(symbol)) {
@@ -39,15 +40,16 @@ public class CryptoAnalyzer {
 
         for (String line : originalText) {
             for (char c : line.toLowerCase().toCharArray()) {
-                encryptSymbol.accept(c, key);
+                encryptSymbol.accept(c, model.getKey());
             }
         }
-        FileHandler.writeFile(destination, encryptedText.toString());
+        fileHandler.writeFile(model.getDestination(), encryptedText.toString());
     }
     
-    public void decrypt(int key, Path destination) {
-        int decryptKey = alphabetMap.size() - (key % alphabetMap.size());
-        encrypt(decryptKey, destination);
+    public void decrypt(EncryptionModel model) {
+        int decryptKey = alphabetMap.size() - (model.getKey() % alphabetMap.size());
+        model.setKey(decryptKey);
+        encrypt(model);
     }
     
     private boolean validateKey(int key) {

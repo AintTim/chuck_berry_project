@@ -3,29 +3,29 @@ package main.handler;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 public class FileHandler {
-    private static final String VALID_FILE_FORMAT = ".txt";
 
-    private FileHandler() {
-
+    FileValidator fileValidator;
+    public FileHandler(FileValidator fileValidator) {
+        this.fileValidator = fileValidator;
     }
 
-    public static List<String> readFile(Path filePath) {
-        if (Files.exists(filePath) && validate(filePath)) {
-            try {
+    public List<String> readFile(Path filePath) {
+        try {
+            if (fileValidator.isPathValid(filePath)) {
                 return Files.readAllLines(filePath);
-            } catch (IOException e) {
-                e.printStackTrace();
+            } else {
+                throw new IllegalArgumentException(String.format("Указанный путь ведет к файлу недопустимого формата: %s", filePath.getFileName()));
             }
+        } catch (IOException e) {
+            throw new IllegalStateException("Невозможно прочитать указанный файл");
         }
-        return new ArrayList<>();
     }
 
-    public static void writeFile(Path destination, String text) {
-        if (!validate(destination)) {
+    public void writeFile(Path destination, String text) {
+        if (!fileValidator.isPathValid(destination)) {
             throw new IllegalArgumentException("Указан недопустимый тип файла");
         }
         try {
@@ -34,11 +34,7 @@ public class FileHandler {
             }
             Files.write(destination, text.getBytes());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Невозможно сделать запись в указанный файл");
         }
-    }
-
-    private static boolean validate(Path path) {
-        return path.getFileName().toString().endsWith(VALID_FILE_FORMAT);
     }
 }
