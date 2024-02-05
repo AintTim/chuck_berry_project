@@ -36,9 +36,8 @@ public class ConsoleHandler {
 
         public void presentAvailableOptions() {
             System.out.println(AVAILABLE_OPTIONS);
-            Arrays.stream(Option.values()).forEach(o -> {
-                System.out.printf("Для выбора опции '%s' нажмите %d\t(%s)%n", o.name(), o.getValue(), o.getDescription());
-            });
+            Arrays.stream(Option.values())
+                    .forEach(o -> System.out.printf("Для выбора опции '%s' нажмите %d\t(%s)%n", o.name(), o.getValue(), o.getDescription()));
         }
 
         public Option selectOption() {
