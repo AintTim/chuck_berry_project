@@ -11,5 +11,6 @@ import java.nio.file.Path;
 public class EncryptionModel {
     private Path source;
     private Path destination;
+    private Path reference;
     private int key;
 }
