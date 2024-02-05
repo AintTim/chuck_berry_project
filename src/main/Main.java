@@ -5,7 +5,7 @@ import static main.model.Alphabet.*;
 import main.handler.ConsoleHandler;
 import main.handler.FileHandler;
 import main.handler.FileValidator;
-import main.model.EncryptionModel;
+import main.model.Option;
 
 import java.nio.file.Path;
 import java.util.Scanner;
@@ -17,14 +17,23 @@ public class Main {
 
     public static void main(String[] args) {
         FileHandler fileHandler = new FileHandler(new FileValidator());
-        ConsoleHandler consoleHandler = new ConsoleHandler(new Scanner(System.in));
+        ConsoleHandler console = new ConsoleHandler(new Scanner(System.in));
+        CryptoAnalyzer analyzer = new CryptoAnalyzer(fileHandler, RUSSIAN, PUNCTUATION);
 
-        CryptoAnalyzer cryptoAnalyzer = new CryptoAnalyzer(fileHandler, RUSSIAN, PUNCTUATION);
-        cryptoAnalyzer.encrypt(new EncryptionModel(SOURCE_FILE_PATH, DEST_FILE_PATH, 3));
-        cryptoAnalyzer.decrypt(new EncryptionModel(DEST_FILE_PATH, DEST_FILE_PATH_1, 3));
+        console.presentAvailableOptions();
+        Option option = console.selectOption();
+
+        switch (option) {
+            case ENCRYPT -> analyzer.encrypt(console.createEncryptedObject(false));
+            case DECRYPT -> analyzer.decrypt(console.createEncryptedObject(false));
+            case BRUTE_FORCE -> analyzer.bruteForce(console.createEncryptedObject(true));
+            case STATISTICAL_ANALYSIS -> analyzer.bruteForce(null);
+        }
 
         //bruteForce - 3 файла: откуда, куда и референс
         //статистика - 3 файла екст. Текст / екст, текст
         // список системных файлов ОС
+
+
     }
 }
