@@ -12,21 +12,21 @@ public class FileHandler {
         this.fileValidator = fileValidator;
     }
 
-    public List<String> readFile(Path filePath) {
+    public List<String> readFile(Path source) {
         try {
-            if (fileValidator.isPathValid(filePath)) {
-                return Files.readAllLines(filePath);
+            if (fileValidator.isPathValid(source)) {
+                return Files.readAllLines(source);
             } else {
-                throw new IllegalArgumentException(String.format("Указанный путь ведет к файлу недопустимого формата: %s", filePath.getFileName()));
+                throw new IllegalArgumentException(String.format("Указанный путь ведет к файлу недопустимого формата: %s", source.getFileName()));
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Невозможно прочитать указанный файл");
+            throw new IllegalStateException(String.format("Невозможно прочитать указанный файл - %s", source));
         }
     }
 
     public void writeFile(Path destination, String text) {
         if (!fileValidator.isPathValid(destination)) {
-            throw new IllegalArgumentException("Указан недопустимый тип файла");
+            throw new IllegalArgumentException(String.format("Указан недопустимый тип файла %s", destination.getFileName()));
         }
         try {
             if (!Files.exists(destination)) {
@@ -34,7 +34,7 @@ public class FileHandler {
             }
             Files.write(destination, text.getBytes());
         } catch (IOException e) {
-            throw new IllegalStateException("Невозможно сделать запись в указанный файл");
+            throw new IllegalStateException(String.format("Проверьте корректность указанного пути -  %s", destination));
         }
     }
 }
