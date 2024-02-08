@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toMap;
 
 public class MapHandler {
 
@@ -26,5 +29,11 @@ public class MapHandler {
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .orElse(null);
+    }
+
+    public static <V> Map<Integer, V> getIndexedMap(List<V> values) {
+        return IntStream.range(0, values.size())
+                .boxed()
+                .collect(toMap(i -> i, values::get));
     }
 }
