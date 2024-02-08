@@ -1,113 +1,88 @@
 package main;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import main.constant.Instruction;
-import main.handler.FileHandler;
+import static main.handler.MapHandler.*;
+import main.handler.FileContentHandler;
 import main.model.Alphabet;
 import main.model.EncryptionModel;
 
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.*;
-import java.util.stream.IntStream;
-
-import static java.util.stream.Collectors.toMap;
-import static main.handler.MapHandler.getKey;
-import static main.handler.MapHandler.getSortedValues;
 
 public class CryptoAnalyzer {
 
     private static final String UNIVERSAL_NON_WORD_REGEX = "[^\\wa-zA-Zа-яА-Я]";
     private final Map<Integer, Character> alphabetMap;
-    private final FileHandler fileHandler;
+    private final FileContentHandler fileHandler;
 
-    public CryptoAnalyzer(FileHandler fileHandler, Alphabet... alphabets) {
-        alphabetMap = mapAlphabet(Alphabet.getDictionaries(alphabets));
-        this.fileHandler = fileHandler;
+    public CryptoAnalyzer(FileContentHandler fileContentHandler, Alphabet... alphabets) {
+        alphabetMap = getIndexedMap(Alphabet.getDictionaries(alphabets));
+        this.fileHandler = fileContentHandler;
     }
 
     public void encrypt(EncryptionModel model) {
-        List<String> originalText = fileHandler.readFile(model.getSource());
+        List<String> originalText = fileHandler.readContent(model.getSource());
         StringBuilder encryptedText = new StringBuilder(originalText.size());
 
-        BiConsumer<Character, Integer> encryptSymbol = (symbol,k) -> {
-            if (alphabetMap.containsValue(Character.toLowerCase(symbol))) {
-                k = (getKey(alphabetMap, Character.toLowerCase(symbol)) + k) % alphabetMap.size();
-                Character encryptedSymbol = (Character.isUpperCase(symbol))
-                        ? Character.toUpperCase(alphabetMap.get(k))
-                        : alphabetMap.get(k);
-                encryptedText.append(encryptedSymbol);
-            } else {
-                encryptedText.append(symbol);
-            }
-        };
-
         for (String line : originalText) {
-            for (char c : line.toCharArray()) {
-                encryptSymbol.accept(c, model.getKey());
+            for (char symbol : line.toCharArray()) {
+                Character encryptedSymbol = (alphabetMap.containsValue(Character.toLowerCase(symbol)))
+                        ? encryptSymbol(symbol, model.getKey())
+                        : symbol;
+                encryptedText.append(encryptedSymbol);
             }
             encryptedText.append(System.lineSeparator());
         }
-        fileHandler.writeFile(model.getDestination(), encryptedText.toString());
+        fileHandler.writeContent(model.getDestination(), encryptedText.toString());
     }
-    
+
     public void decrypt(EncryptionModel model) {
         int decryptKey = alphabetMap.size() - (model.getKey() % alphabetMap.size());
         model.setKey(decryptKey);
         encrypt(model);
     }
 
-    public EncryptionModel bruteForce(EncryptionModel model) {
-        Map<String, MutableInt> dictionary = collectUniqueWords(model.getReference(), UNIVERSAL_NON_WORD_REGEX);
-        List<String> fiveMostPopularWords = getSortedValues(dictionary, Comparator.comparingInt(e -> e.getValue().value)).subList(0, 5);
+    public int bruteForce(EncryptionModel model) {
+        List<String> threeCommonWords = fileHandler.collectCommonWords(model.getReference(), UNIVERSAL_NON_WORD_REGEX, 3);
         int key = model.getKey();
         while (key < alphabetMap.size()) {
             decrypt(model);
-            if (allWordsMatch(model.getDestination(), fiveMostPopularWords)) {
-                System.out.println(Instruction.BRUTE_FORCE_VALID_KEY + key);
-                return model;
+            if (allWordsMatch(model.getDestination(), threeCommonWords)) {
+                return key;
             }
             model.setKey(++key);
         }
-        //Добавить исключение или рекомендацию уменьшить количество проверямых ключей
-        throw new IllegalArgumentException("Не удалось расшифровать файл. Попробуйте увеличить объём текста с примером или сократить количество проверямых ключей");
+        throw new IllegalArgumentException("Не удалось расшифровать файл.\nПопробуйте увеличить объём текста с примером");
+    }
+
+    public int statisticalAnalysis(EncryptionModel model) {
+        Character referenceMostCommonChar = getCommonChar(model.getReference());
+        Character sourceMostCommonChar = getCommonChar(model.getSource());
+        int encryptionKey = getEncryptionKey(referenceMostCommonChar, sourceMostCommonChar);
+        model.setKey(encryptionKey);
+        decrypt(model);
+        return encryptionKey;
+    }
+
+    private Integer getEncryptionKey(Character origin, Character encrypted) {
+        int key1 = getKey(alphabetMap, origin);
+        int key2 = getKey(alphabetMap, encrypted);
+        return (key2 < key1)
+                ? alphabetMap.size() + key2 - key1
+                : key2 - key1;
+    }
+
+    private Character getCommonChar(Path source) {
+        return getSortedValues(fileHandler.collectSymbolFrequency(source, alphabetMap), Map.Entry.comparingByValue()).get(0);
+    }
+
+    private Character encryptSymbol(Character symbol, int key) {
+        int encryptionKey = (getKey(alphabetMap, Character.toLowerCase(symbol)) + key) % alphabetMap.size();
+        return  (Character.isUpperCase(symbol))
+                ? Character.toUpperCase(alphabetMap.get(encryptionKey))
+                : alphabetMap.get(encryptionKey);
     }
 
     private boolean allWordsMatch(Path source, List<String> wordCheckList) {
-        return collectUniqueWords(source, UNIVERSAL_NON_WORD_REGEX).keySet().containsAll(wordCheckList);
-    }
-
-    private Map<String, MutableInt> collectUniqueWords(Path source, String splitter) {
-        Map<String, MutableInt> dictionary = new HashMap<>();
-        for (String line : fileHandler.readFile(source)) {
-            Arrays.stream(line.split(splitter))
-                    .filter(w -> !w.isBlank())
-                    .forEach(word -> {
-                        MutableInt value = dictionary.get(word);
-                        if (value == null) {
-                            dictionary.put(word, new MutableInt());
-                        } else {
-                            value.increment();
-                        }
-                    });
-        }
-        return dictionary;
-    }
-
-    private static Map<Integer, Character> mapAlphabet(List<Character> alphabet) {
-        return IntStream.range(0, alphabet.size())
-                .boxed()
-                .collect(toMap(i -> i, alphabet::get));
-    }
-
-    @Getter
-    @EqualsAndHashCode(of = {"value"})
-    private static class MutableInt {
-        private int value = 1;
-
-        public void increment() {
-            ++value;
-        }
+        return fileHandler.collectUniqueWords(source, UNIVERSAL_NON_WORD_REGEX).keySet().containsAll(wordCheckList);
     }
 }
