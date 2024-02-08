@@ -31,7 +31,7 @@ public class FileContentHandler {
     }
     public Map<Character, Double> collectSymbolFrequency(Path source, Map<Integer, Character> alphabet) {
         Map<Character, MutableInt> dictionary = new HashMap<>();
-        for (String line : fileHandler.readFile(source)) {
+        for (String line : readContent(source)) {
             for (char symbol : line.toCharArray()) {
                 if (alphabet.containsValue(Character.toLowerCase(symbol))) {
                     MutableInt value = dictionary.get(symbol);
@@ -57,7 +57,7 @@ public class FileContentHandler {
 
     public Map<String, Integer> collectUniqueWords(Path source, String splitter) {
         Map<String, MutableInt> dictionary = new HashMap<>();
-        for (String line : fileHandler.readFile(source)) {
+        for (String line : readContent(source)) {
             Arrays.stream(line.split(splitter))
                     .filter(w -> !w.isBlank())
                     .forEach(word -> {
