@@ -12,15 +12,15 @@ public class CryptoAnalyzer {
 
     private static final String UNIVERSAL_NON_WORD_REGEX = "[^\\wa-zA-Zа-яА-Я]";
     private final Map<Integer, Character> alphabetMap;
-    private final FileContentHandler fileHandler;
+    private final FileContentHandler fileContentHandler;
 
     public CryptoAnalyzer(FileContentHandler fileContentHandler, Alphabet... alphabets) {
         alphabetMap = getIndexedMap(Alphabet.getDictionaries(alphabets));
-        this.fileHandler = fileContentHandler;
+        this.fileContentHandler = fileContentHandler;
     }
 
     public void encrypt(EncryptionModel model) {
-        List<String> originalText = fileHandler.readContent(model.getSource());
+        List<String> originalText = fileContentHandler.readContent(model.getSource());
         StringBuilder encryptedText = new StringBuilder(originalText.size());
 
         for (String line : originalText) {
@@ -32,7 +32,7 @@ public class CryptoAnalyzer {
             }
             encryptedText.append(System.lineSeparator());
         }
-        fileHandler.writeContent(model.getDestination(), encryptedText.toString());
+        fileContentHandler.writeContent(model.getDestination(), encryptedText.toString());
     }
 
     public void decrypt(EncryptionModel model) {
@@ -42,7 +42,7 @@ public class CryptoAnalyzer {
     }
 
     public int bruteForce(EncryptionModel model) {
-        List<String> threeCommonWords = fileHandler.collectCommonWords(model.getReference(), UNIVERSAL_NON_WORD_REGEX, 3);
+        List<String> threeCommonWords = fileContentHandler.collectCommonWords(model.getReference(), UNIVERSAL_NON_WORD_REGEX, 3);
         int key = model.getKey();
         while (key < alphabetMap.size()) {
             decrypt(model);
@@ -72,7 +72,7 @@ public class CryptoAnalyzer {
     }
 
     private Character getCommonChar(Path source) {
-        return getSortedValues(fileHandler.collectSymbolFrequency(source, alphabetMap), Map.Entry.comparingByValue()).get(0);
+        return getSortedValues(fileContentHandler.collectSymbolFrequency(source, alphabetMap), Map.Entry.comparingByValue()).get(0);
     }
 
     private Character encryptSymbol(Character symbol, int key) {
@@ -83,6 +83,6 @@ public class CryptoAnalyzer {
     }
 
     private boolean allWordsMatch(Path source, List<String> wordCheckList) {
-        return fileHandler.collectUniqueWords(source, UNIVERSAL_NON_WORD_REGEX).keySet().containsAll(wordCheckList);
+        return fileContentHandler.collectUniqueWords(source, UNIVERSAL_NON_WORD_REGEX).keySet().containsAll(wordCheckList);
     }
 }
