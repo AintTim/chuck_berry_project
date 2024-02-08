@@ -6,7 +6,6 @@ import main.handler.ConsoleHandler;
 import main.handler.FileContentHandler;
 import main.handler.FileHandler;
 import main.handler.FileValidator;
-import main.model.Alphabet;
 import main.model.Option;
 
 import java.util.Scanner;
@@ -19,7 +18,7 @@ public class Main {
         ConsoleHandler console = new ConsoleHandler(new Scanner(System.in));
 
         console.presentAlphabets();
-        CryptoAnalyzer analyzer = new CryptoAnalyzer(fileContentHandler, console.selectAlphabet().toArray(new Alphabet[0]));
+        CryptoAnalyzer analyzer = new CryptoAnalyzer(fileContentHandler, console.selectAlphabet());
 
         console.presentOptions();
         Option option = console.selectOption();

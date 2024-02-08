@@ -14,7 +14,7 @@ public class CryptoAnalyzer {
     private final Map<Integer, Character> alphabetMap;
     private final FileContentHandler fileContentHandler;
 
-    public CryptoAnalyzer(FileContentHandler fileContentHandler, Alphabet... alphabets) {
+    public CryptoAnalyzer(FileContentHandler fileContentHandler, List<Alphabet> alphabets) {
         alphabetMap = getIndexedMap(Alphabet.getDictionaries(alphabets));
         this.fileContentHandler = fileContentHandler;
     }

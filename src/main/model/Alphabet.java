@@ -2,7 +2,6 @@ package main.model;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public enum Alphabet {
@@ -19,8 +18,9 @@ public enum Alphabet {
         this.dictionary = dictionary;
     }
 
-    public static List<Character> getDictionaries(Alphabet... alphabets) {
-        return Arrays.stream(alphabets)
+    public static List<Character> getDictionaries(List<Alphabet> alphabets) {
+        return alphabets
+                .stream()
                 .collect(ArrayList::new,
                         (list, dictionary) -> list.addAll(dictionary.dictionary),
                         ArrayList::addAll);
