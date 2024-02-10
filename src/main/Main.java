@@ -24,8 +24,8 @@ public class Main {
         Option option = console.selectOption();
 
         switch (option) {
-            case ENCRYPT -> analyzer.encrypt(console.createEncryptedObject(false));
-            case DECRYPT -> analyzer.decrypt(console.createEncryptedObject(false));
+            case ENCRYPT -> analyzer.encrypt(console.createEncryptedObject(false), true);
+            case DECRYPT -> analyzer.decrypt(console.createEncryptedObject(false), true);
             case BRUTE_FORCE -> console.announce(ENCRYPTION_KEY + analyzer.bruteForce(console.createEncryptedObject(true)));
             case STATISTICAL_ANALYSIS -> console.announce(ENCRYPTION_KEY + analyzer.statisticalAnalysis(console.createEncryptedObject(true)));
         }

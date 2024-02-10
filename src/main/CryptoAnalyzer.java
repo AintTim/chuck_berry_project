@@ -19,7 +19,7 @@ public class CryptoAnalyzer {
         this.fileContentHandler = fileContentHandler;
     }
 
-    public void encrypt(EncryptionModel model) {
+    public String encrypt(EncryptionModel model, boolean isRecordNeeded) {
         List<String> originalText = fileContentHandler.readContent(model.getSource());
         StringBuilder encryptedText = new StringBuilder(originalText.size());
 
@@ -32,21 +32,25 @@ public class CryptoAnalyzer {
             }
             encryptedText.append(System.lineSeparator());
         }
-        fileContentHandler.writeContent(model.getDestination(), encryptedText.toString());
+        if (isRecordNeeded) {
+            fileContentHandler.writeContent(model.getDestination(), encryptedText.toString());
+        }
+        return encryptedText.toString();
     }
 
-    public void decrypt(EncryptionModel model) {
+    public String decrypt(EncryptionModel model, boolean isRecordNeeded) {
         int decryptKey = alphabetMap.size() - (model.getKey() % alphabetMap.size());
         model.setKey(decryptKey);
-        encrypt(model);
+        return encrypt(model, isRecordNeeded);
     }
 
     public int bruteForce(EncryptionModel model) {
         List<String> threeCommonWords = fileContentHandler.collectCommonWords(model.getReference(), UNIVERSAL_NON_WORD_REGEX, 3);
         int key = model.getKey();
         while (key < alphabetMap.size()) {
-            decrypt(model);
-            if (allWordsMatch(model.getDestination(), threeCommonWords)) {
+            String decryptedText = decrypt(model, false);
+            if (allWordsMatch(decryptedText, threeCommonWords)) {
+                fileContentHandler.writeContent(model.getDestination(), decryptedText);
                 return key;
             }
             model.setKey(++key);
@@ -59,11 +63,11 @@ public class CryptoAnalyzer {
         Character sourceMostCommonChar = getCommonChar(model.getSource());
         int encryptionKey = getEncryptionKey(referenceMostCommonChar, sourceMostCommonChar);
         model.setKey(encryptionKey);
-        decrypt(model);
+        decrypt(model, true);
         return encryptionKey;
     }
 
-    private Integer getEncryptionKey(Character origin, Character encrypted) {
+    private int getEncryptionKey(Character origin, Character encrypted) {
         int key1 = getKey(alphabetMap, origin);
         int key2 = getKey(alphabetMap, encrypted);
         return (key2 < key1)
@@ -82,7 +86,7 @@ public class CryptoAnalyzer {
                 : alphabetMap.get(encryptionKey);
     }
 
-    private boolean allWordsMatch(Path source, List<String> wordCheckList) {
+    private boolean allWordsMatch(String source, List<String> wordCheckList) {
         return fileContentHandler.collectUniqueWords(source, UNIVERSAL_NON_WORD_REGEX).keySet().containsAll(wordCheckList);
     }
 }
