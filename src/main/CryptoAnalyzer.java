@@ -20,10 +20,10 @@ public class CryptoAnalyzer {
     }
 
     public String encrypt(EncryptionModel model, boolean isRecordNeeded) {
-        List<String> originalText = fileContentHandler.readContent(model.getSource());
-        StringBuilder encryptedText = new StringBuilder(originalText.size());
+        List<String> sourceText = cacheSourceText(model);
+        StringBuilder encryptedText = new StringBuilder();
 
-        for (String line : originalText) {
+        for (String line : sourceText) {
             for (char symbol : line.toCharArray()) {
                 Character encryptedSymbol = (alphabetMap.containsValue(Character.toLowerCase(symbol)))
                         ? encryptSymbol(symbol, model.getKey())
@@ -73,6 +73,13 @@ public class CryptoAnalyzer {
         return (key2 < key1)
                 ? alphabetMap.size() + key2 - key1
                 : key2 - key1;
+    }
+
+    private List<String> cacheSourceText(EncryptionModel model) {
+        if (Objects.isNull(model.getCachedSourceText())) {
+            model.setCachedSourceText(fileContentHandler.readContent(model.getSource()));
+        }
+        return model.getCachedSourceText();
     }
 
     private Character getCommonChar(Path source) {
