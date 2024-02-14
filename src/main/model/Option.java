@@ -1,16 +1,18 @@
 package main.model;
+
 import lombok.Getter;
+import main.constant.Description;
 
 import java.util.Arrays;
 import java.util.Optional;
 
-import static main.constant.Description.*;
 @Getter
 public enum Option {
-    ENCRYPT(1, ENCRYPT_DESC),
-    DECRYPT(2, DECRYPT_DESC),
-    BRUTE_FORCE(3, BRUTE_FORCE_DESC),
-    STATISTICAL_ANALYSIS(4, STATISTICS_ANALYSIS_DESC);
+    ENCRYPT(1, Description.ENCRYPT_DESC),
+    DECRYPT(2, Description.DECRYPT_DESC),
+    BRUTE_FORCE(3, Description.BRUTE_FORCE_DESC),
+    STATISTICAL_ANALYSIS(4, Description.STATISTICS_ANALYSIS_DESC),
+    EXIT(5, Description.EXIT_DESC);
 
     private final int value;
     private final String description;

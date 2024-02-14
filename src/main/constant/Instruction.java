@@ -15,9 +15,4 @@ public class Instruction {
     public static final String SELECT_OPTION = "Выберите опцию: ";
     public static final String INVALID_OPTION = "Выбранная опция отсутствует в списке доступных.\nПожалуйста, выберите существующую опцию: ";
     public static final String ENCRYPTION_KEY = "Файл был зашифрован с помощью ключа - ";
-
-
-
-
-
 }

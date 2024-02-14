@@ -1,12 +1,15 @@
 package main;
 
-import static main.handler.MapHandler.*;
 import main.handler.FileContentHandler;
 import main.model.Alphabet;
 import main.model.EncryptionModel;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static main.handler.MapHandler.*;
 
 public class CryptoAnalyzer {
 
@@ -88,7 +91,7 @@ public class CryptoAnalyzer {
 
     private Character encryptSymbol(Character symbol, int key) {
         int encryptionKey = (getKey(alphabetMap, Character.toLowerCase(symbol)) + key) % alphabetMap.size();
-        return  (Character.isUpperCase(symbol))
+        return (Character.isUpperCase(symbol))
                 ? Character.toUpperCase(alphabetMap.get(encryptionKey))
                 : alphabetMap.get(encryptionKey);
     }

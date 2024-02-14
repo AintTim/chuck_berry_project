@@ -1,7 +1,5 @@
 package main.handler;
 
-import static main.constant.Instruction.*;
-
 import main.model.Alphabet;
 import main.model.EncryptionModel;
 import main.model.Option;
@@ -13,78 +11,80 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
+import static main.constant.Instruction.*;
+
 public class ConsoleHandler {
-        Scanner scanner;
+    Scanner scanner;
 
-        public ConsoleHandler(Scanner scanner) {
-            this.scanner = scanner;
-        }
+    public ConsoleHandler(Scanner scanner) {
+        this.scanner = scanner;
+    }
 
-        public EncryptionModel createEncryptedObject(boolean hasReference) {
-            Path source = Path.of(provideData(ENTER_SOURCE_PATH));
-            Path destination = Path.of(provideData(ENTER_DESTINATION_PATH));
-            Path reference = null;
-            int key;
-            if (hasReference) {
-                reference = Path.of(provideData(ENTER_REFERENCE_PATH));
-                key = 1;
-            } else {
-                key = Integer.parseInt(provideData(ENTER_KEY));
-                while (!validateKey(key)) {
-                    key = Integer.parseInt(provideData(INVALID_KEY));
-                }
-            }
+    private static boolean validateKey(int key) {
+        return key > 0;
+    }
 
-            return new EncryptionModel(source, destination, reference, key);
-        }
-
-        public void announce(String announcement) {
-            System.out.println(announcement);
-        }
-
-        public void presentOptions() {
-            announce(AVAILABLE_OPTIONS);
-            Arrays.stream(Option.values())
-                    .forEach(o -> announce(String.format("Для выбора опции '%s' нажмите %d\t(%s)", o.name(), o.getValue(), o.getDescription())));
-        }
-
-        public void presentAlphabets() {
-            announce(AVAILABLE_ALPHABETS);
-            Arrays.stream(Alphabet.values())
-                    .forEach(a -> announce(a.name()));
-        }
-
-        public List<Alphabet> selectAlphabet() {
-            String spaceRegex = " ";
-            try {
-                announce(SELECT_ALPHABET);
-                return Stream.of(scanner.nextLine().split(spaceRegex))
-                        .map(Alphabet::valueOf)
-                        .toList();
-            } catch (IllegalArgumentException e) {
-                announce(INVALID_ALPHABET);
-                return selectAlphabet();
+    public EncryptionModel createEncryptedObject(boolean hasReference) {
+        Path source = Path.of(provideData(ENTER_SOURCE_PATH));
+        Path destination = Path.of(provideData(ENTER_DESTINATION_PATH));
+        Path reference = null;
+        int key;
+        if (hasReference) {
+            reference = Path.of(provideData(ENTER_REFERENCE_PATH));
+            key = 1;
+        } else {
+            key = Integer.parseInt(provideData(ENTER_KEY));
+            while (!validateKey(key)) {
+                key = Integer.parseInt(provideData(INVALID_KEY));
             }
         }
 
-        public Option selectOption() {
-            announce(SELECT_OPTION);
-            int input = Integer.parseInt(scanner.nextLine());
-            Optional<Option> option = Option.getFromValue(input);
-            while (option.isEmpty()) {
-                announce(INVALID_OPTION);
-                input = Integer.parseInt(scanner.nextLine());
-                option = Option.getFromValue(input);
-            }
-            return option.get();
-        }
+        return new EncryptionModel(source, destination, reference, key);
+    }
 
-        private String provideData(String instruction) {
-            announce(instruction);
-            return scanner.nextLine();
-        }
+    public void announce(String announcement) {
+        System.out.println(announcement);
+    }
 
-        private static boolean validateKey(int key) {
-            return key > 0;
+    public void presentOptions() {
+        announce(AVAILABLE_OPTIONS);
+        Arrays.stream(Option.values())
+                .forEach(o -> announce(String.format("Для выбора опции '%s' нажмите %d\t(%s)", o.name(), o.getValue(), o.getDescription())));
+    }
+
+    public void presentAlphabets() {
+        announce(AVAILABLE_ALPHABETS);
+        Arrays.stream(Alphabet.values())
+                .forEach(a -> announce(a.name()));
+    }
+
+    public List<Alphabet> selectAlphabet() {
+        String spaceRegex = " ";
+        try {
+            announce(SELECT_ALPHABET);
+            return Stream.of(scanner.nextLine().split(spaceRegex))
+                    .map(Alphabet::valueOf)
+                    .toList();
+        } catch (IllegalArgumentException e) {
+            announce(INVALID_ALPHABET);
+            return selectAlphabet();
         }
+    }
+
+    public Option selectOption() {
+        announce(SELECT_OPTION);
+        int input = Integer.parseInt(scanner.nextLine());
+        Optional<Option> option = Option.getFromValue(input);
+        while (option.isEmpty()) {
+            announce(INVALID_OPTION);
+            input = Integer.parseInt(scanner.nextLine());
+            option = Option.getFromValue(input);
+        }
+        return option.get();
+    }
+
+    private String provideData(String instruction) {
+        announce(instruction);
+        return scanner.nextLine();
+    }
 }
