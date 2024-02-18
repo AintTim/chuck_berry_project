@@ -7,7 +7,7 @@ import java.util.List;
 
 public class FileHandler {
 
-    FileValidator fileValidator;
+    private final FileValidator fileValidator;
     public FileHandler(FileValidator fileValidator) {
         this.fileValidator = fileValidator;
     }

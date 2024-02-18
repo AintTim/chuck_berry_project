@@ -9,11 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static main.handler.MapHandler.*;
+import static main.handler.MapHandler.getIndexedMap;
+import static main.handler.MapHandler.getKey;
+import static main.handler.MapHandler.getSortedValues;
 
 public class CryptoAnalyzer {
 
     private static final String UNIVERSAL_NON_WORD_REGEX = "[^\\wa-zA-Zа-яА-Я]";
+    public static final int LIMIT = 3;
     private final Map<Integer, Character> alphabetMap;
     private final FileContentHandler fileContentHandler;
 
@@ -26,19 +29,23 @@ public class CryptoAnalyzer {
         List<String> sourceText = cacheSourceText(model);
         StringBuilder encryptedText = new StringBuilder();
 
-        for (String line : sourceText) {
+        sourceText.forEach(line -> {
             for (char symbol : line.toCharArray()) {
-                Character encryptedSymbol = (alphabetMap.containsValue(Character.toLowerCase(symbol)))
-                        ? encryptSymbol(symbol, model.getKey())
-                        : symbol;
+                Character encryptedSymbol = getEncryptedSymbol(model, symbol);
                 encryptedText.append(encryptedSymbol);
             }
             encryptedText.append(System.lineSeparator());
-        }
+        });
         if (isRecordNeeded) {
             fileContentHandler.writeContent(model.getDestination(), encryptedText.toString());
         }
         return encryptedText.toString();
+    }
+
+    private char getEncryptedSymbol(EncryptionModel model, char symbol) {
+        return (alphabetMap.containsValue(Character.toLowerCase(symbol)))
+                ? encryptSymbol(symbol, model.getKey())
+                : symbol;
     }
 
     public String decrypt(EncryptionModel model, boolean isRecordNeeded) {
@@ -48,11 +55,11 @@ public class CryptoAnalyzer {
     }
 
     public int bruteForce(EncryptionModel model) {
-        List<String> threeCommonWords = fileContentHandler.collectCommonWords(model.getReference(), UNIVERSAL_NON_WORD_REGEX, 3);
+        List<String> commonWords = fileContentHandler.collectCommonWords(model.getReference(), UNIVERSAL_NON_WORD_REGEX, LIMIT);
         int key = model.getKey();
         while (key < alphabetMap.size()) {
             String decryptedText = decrypt(model, false);
-            if (allWordsMatch(decryptedText, threeCommonWords)) {
+            if (allWordsMatch(decryptedText, commonWords)) {
                 fileContentHandler.writeContent(model.getDestination(), decryptedText);
                 return key;
             }

@@ -11,10 +11,20 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
-import static main.constant.Instruction.*;
+import static main.constant.Instruction.AVAILABLE_ALPHABETS;
+import static main.constant.Instruction.AVAILABLE_OPTIONS;
+import static main.constant.Instruction.ENTER_DESTINATION_PATH;
+import static main.constant.Instruction.ENTER_KEY;
+import static main.constant.Instruction.ENTER_REFERENCE_PATH;
+import static main.constant.Instruction.ENTER_SOURCE_PATH;
+import static main.constant.Instruction.INVALID_ALPHABET;
+import static main.constant.Instruction.INVALID_KEY;
+import static main.constant.Instruction.INVALID_OPTION;
+import static main.constant.Instruction.SELECT_ALPHABET;
+import static main.constant.Instruction.SELECT_OPTION;
 
 public class ConsoleHandler {
-    Scanner scanner;
+    private final Scanner scanner;
 
     public ConsoleHandler(Scanner scanner) {
         this.scanner = scanner;

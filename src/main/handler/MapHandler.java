@@ -1,5 +1,7 @@
 package main.handler;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -8,11 +10,9 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toMap;
 
+@UtilityClass
 public class MapHandler {
 
-    private MapHandler() {
-
-    }
 
     public static <K, V> List<K> getSortedValues(Map<K, V> map, Comparator<Map.Entry<K, V>> comparator) {
         return map.entrySet().stream()
